@@ -25,7 +25,6 @@ public class CompanyController {
         return ResponseEntity.ok().body(result);
 
         }catch(Exception exception){
-            exception.printStackTrace();
             return ResponseEntity.badRequest().body(exception.getMessage());
 
         }

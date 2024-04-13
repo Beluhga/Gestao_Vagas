@@ -2,6 +2,7 @@ package br.com.michaelalbuquerque.gestao_vagas.modules.company.useCases;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 
 import javax.naming.AuthenticationException;
 
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
+import br.com.michaelalbuquerque.gestao_vagas.modules.company.dto.AuthCOmpanyResponseDTO;
 import br.com.michaelalbuquerque.gestao_vagas.modules.company.dto.AuthCompanyDTO;
 import br.com.michaelalbuquerque.gestao_vagas.modules.company.repositories.CompanyRepository;
 
@@ -30,7 +32,7 @@ public class AuthCompanyUseCase {
     private CompanyRepository companyRepository;
     
 
-    public String execute(AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
+    public AuthCOmpanyResponseDTO execute(AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
 
         var company = this.companyRepository.findByUsername(authCompanyDTO.getUsername()).orElseThrow(
             () -> {
@@ -43,13 +45,23 @@ public class AuthCompanyUseCase {
             }
 
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
+
+            var expriesIn = Instant.now().plus(Duration.ofHours(2));
+
             var token = JWT.create()
             .withIssuer("Alvitre")
-            .withExpiresAt(Instant.now().plus(Duration.ofHours(2)))
+            .withExpiresAt(expriesIn)
             .withSubject(company.getId().toString())
+            .withClaim("roles", Arrays.asList("COMPANY"))
             .sign(algorithm);
 
-            return token;
+            // builder para o token
+            var aithCompanyResponseDTO = AuthCOmpanyResponseDTO.builder()
+            .access_token(token)
+            .expires_in(expriesIn.toEpochMilli())
+            .build();
+
+            return aithCompanyResponseDTO;
 
 
     }
