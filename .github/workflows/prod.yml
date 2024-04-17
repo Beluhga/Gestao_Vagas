@@ -23,3 +23,13 @@ jobs:
               run: docker build -t alvitre/gestao_vagas .
             - name: Publish image
               run: docker push alvitre/gestao_vagas
+    deploy:
+       needs: build
+       runs-on: self-hosted
+       steps:
+           - name: Pull image docker hub
+             run: docker pull alvitre/gestao_vagas:latest
+           - name: remove container
+             run: docker rm -f gestao-vagas
+           - name: Run docker container
+             run: docker run -d -p 8080:8080 -e DATABASE_URL=${{secrets.DATABASE_URL}} -e DATABASE_PASSWORD=${{secrets.DOCKER_PASSWORD}} -e DATABASE_USERNAME${{secrets.DATABASE_USERNAME}} --name gestao-vagas alvitre/gestao_vagas
